@@ -10,13 +10,15 @@ defmodule Tokenex.MixProject do
       version: @version,
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        "test.ci": :test
       ],
 
       # Dialyzer
@@ -40,6 +42,18 @@ defmodule Tokenex.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:test, :dev], runtime: false},
       {:excoveralls, "~> 0.10", only: :test}
+    ]
+  end
+
+  defp aliases do
+    [
+      "test.ci": [
+        "format --check-formatted",
+        "deps.unlock --check-unused",
+        "credo --strict",
+        "test --raise",
+        "dialyzer"
+      ]
     ]
   end
 end

@@ -1,4 +1,5 @@
 defmodule Tokenex.MixProject do
+  @moduledoc false
   use Mix.Project
 
   @version "1.0.0"
@@ -9,7 +10,14 @@ defmodule Tokenex.MixProject do
       version: @version,
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+
+      # Dialyzer
+      dialyzer: [
+        plt_add_apps: [:ex_unit],
+        plt_core_path: "_build/#{Mix.env()}",
+        flags: [:error_handling, :missing_return, :underspecs]
+      ]
     ]
   end
 
@@ -22,7 +30,8 @@ defmodule Tokenex.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.3", only: [:test, :dev], runtime: false}
     ]
   end
 end

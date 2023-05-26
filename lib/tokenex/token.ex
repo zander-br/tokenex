@@ -16,10 +16,10 @@ defmodule Tokenex.Token do
   defstruct access_token: nil, errors: [], expires_in: nil, token_type: nil, valid?: false
 
   @type t :: %Token{
-          access_token: binary(),
+          access_token: String.t(),
           errors: list(),
-          expires_in: integer(),
-          token_type: binary(),
+          expires_in: String.t(),
+          token_type: String.t(),
           valid?: boolean()
         }
 

@@ -1,0 +1,136 @@
+name: Continuous integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  code_coverage:
+    name: ⛱ Code coverage
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+
+    steps:
+      - name: Checkout out repository
+        uses: actions/checkout@v2
+
+      - name: Install Elixir and Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.14.4"
+          otp-version: "26.0"
+
+      - name: Restore the deps cache
+        uses: actions/cache@v3
+        id: deps-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-deps-mixlockhash-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-deps-
+
+      - name: Restore the build cache
+        uses: actions/cache@v3
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-build-mixlockhash-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-build-
+
+      - name: Fetch mix dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+
+      - name: Compile dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: mix deps.compile
+
+      - name: Compile project
+        run: mix compile --warnings-as-errors --force
+
+      - name: Check coverage
+        run: mix coveralls.json
+
+      - name: Run codecov script
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  lint:
+    name: 💅 Lint
+    runs-on: ubuntu-latest
+    env:
+      MIX_ENV: test
+
+    steps:
+      - name: Checkout out repository
+        uses: actions/checkout@v2
+
+      - name: Install Elixir and Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.14.2"
+          otp-version: "25.2"
+
+      - name: Restore the deps cache
+        uses: actions/cache@v3
+        id: deps-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-deps-mixlockhash-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-deps-
+
+      - name: Restore the _build cache
+        uses: actions/cache@v3
+        id: build-cache
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-build-mixlockhash-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ env.MIX_ENV }}-build-
+
+      - name: Fetch mix dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+
+      - name: Compile dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: mix deps.compile
+
+      - name: Compile project
+        run: mix compile --warnings-as-errors --force
+
+      - name: Restore PLT cache
+        uses: actions/cache@v2
+        id: plt_cache
+        with:
+          key: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          path: |
+            priv/plts
+
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: mix dialyzer --plt
+
+      - name: Check Formatting
+        run: mix format --check-formatted
+
+      - name: Run Credo
+        run: mix credo --strict
+
+      - name: Run Dialyzer
+        run: mix dialyzer

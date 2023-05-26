@@ -1,5 +1,4 @@
 defmodule Tokenex.MixProject do
-  @moduledoc false
   use Mix.Project
 
   @version "1.0.0"
@@ -41,7 +40,8 @@ defmodule Tokenex.MixProject do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:test, :dev], runtime: false},
-      {:excoveralls, "~> 0.10", only: :test}
+      {:excoveralls, "~> 0.10", only: :test},
+      {:ex_machina, "~> 2.7.0", only: :test}
     ]
   end
 

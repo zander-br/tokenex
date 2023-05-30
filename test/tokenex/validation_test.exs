@@ -21,7 +21,7 @@ defmodule Tokenex.ValidationTest do
   describe "validate!/2" do
     test "should return :ok when the validation is successful" do
       opts = [{:name, "tokenex"}]
-      validator = fn {:name, name} when is_binary(name) -> :ok end
+      validator = fn _ -> :ok end
       assert :ok == Validation.validate!(opts, validator)
     end
 

@@ -37,6 +37,6 @@ defmodule Tokenex.Validation do
   """
   @spec validate!(opts :: Keyword.t(), validator()) :: :ok
   def validate!(opts, validator) when is_list(opts) and is_function(validator, 1) do
-    with {:error, reason} <- apply(validator, opts), do: raise(ArgumentError, reason)
+    with {:error, reason} <- validator.(opts), do: raise(ArgumentError, reason)
   end
 end

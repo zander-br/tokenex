@@ -13,12 +13,18 @@ defmodule Tokenex.Token do
   """
   alias __MODULE__
 
-  defstruct access_token: nil, errors: [], expires_in: nil, token_type: nil, valid?: false
+  defstruct access_token: nil,
+            errors: [],
+            expires_in: nil,
+            expires_timestamp: nil,
+            token_type: nil,
+            valid?: false
 
   @type t :: %Token{
           access_token: String.t(),
           errors: list(),
-          expires_in: String.t(),
+          expires_timestamp: non_neg_integer(),
+          expires_in: non_neg_integer(),
           token_type: String.t(),
           valid?: boolean()
         }
@@ -36,7 +42,7 @@ defmodule Tokenex.Token do
   ## Examples
 
     iex> Tokenex.Token.new(%{access_token: "access_token", expires_in: 1200, token_type: "bearer"})
-    %Tokenex.Token{access_token: "access_token", errors: [], expires_in: 1200, token_type: "bearer", valid?: true}
+    %Tokenex.Token{access_token: "access_token", errors: [], expires_timestamp: nil, expires_in: 1200, token_type: "bearer", valid?: true}
 
   """
   @spec new(attrs :: map()) :: t()

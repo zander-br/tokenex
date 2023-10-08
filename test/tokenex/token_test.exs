@@ -14,6 +14,7 @@ defmodule Tokenex.TokenTest do
                access_token: "access_token",
                errors: [],
                expires_in: 1200,
+               expires_timestamp: nil,
                token_type: "bearer",
                valid?: true
              } == Token.new(valid_attrs)
